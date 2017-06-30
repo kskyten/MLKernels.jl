@@ -31,7 +31,7 @@ function theta{T<:AbstractFloat,A,B}(I::Interval{T,A,B}, x::T)
     if A <: OpenBound
         return B <: OpenBound ? log(x-I.a.value) - log(I.b.value-x) : log(x-I.a.value)
     else
-        return B <: OpenBound ? log(I.b.value-x) : x 
+        return B <: OpenBound ? log(I.b.value-x) : x
     end
 end
 
@@ -62,7 +62,20 @@ function eta{T<:AbstractFloat,A,B}(I::Interval{T,A,B}, x::T)
             return exp(x) + I.a.value
         end
     else
-        return B <: OpenBound ? I.b.value - exp(x) : x 
+        return B <: OpenBound ? I.b.value - exp(x) : x
+    end
+end
+
+function gradeta{T<:AbstractFloat,A,B}(I::Interval{T,A,B}, x::T)
+    checktheta(I,x) || throw(DomainError())
+    if A <: OpenBound
+        if B <: OpenBound
+            return ((I.b.value - I.a.value) * exp(x)) / (one(T) + exp(x))^2
+        else
+            return exp(x)
+        end
+    else
+        return B <: OpenBound ? -exp(x) : 1
     end
 end
 
