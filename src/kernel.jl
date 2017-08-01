@@ -74,7 +74,7 @@ immutable SigmoidKernel{T<:AbstractFloat} <: Kernel{T}
     c::HyperParameter{T}
     SigmoidKernel(a::Real, c::Real) = new(
         HyperParameter(convert(T,a), interval(OpenBound(zero(T)),   nothing)),
-        HyperParameter(convert(T,c), interval(ClosedBound(zero(T)), nothing))   
+        HyperParameter(convert(T,c), interval(ClosedBound(zero(T)), nothing))
     )
 end
 function SigmoidKernel{T1<:Real,T2<:Real}(a::T1 = 1.0, c::T2 = one(T1))
@@ -82,9 +82,13 @@ function SigmoidKernel{T1<:Real,T2<:Real}(a::T1 = 1.0, c::T2 = one(T1))
 end
 
 @inline sigmoidkernel{T<:AbstractFloat}(z::T, a::T, c::T) = tanh(a*z + c)
+@inline dsigmoidkernel{T<:AbstractFloat}(wrt::Type{Val{:a}}, z::T, a::T, c::T) = z * sech(c + a*z)^2
+@inline dsigmoidkernel{T<:AbstractFloat}(wrt::Type{Val{:c}}, z::T, a::T, c::T) = sech(c + a*z)^2
 
 @inline pairwisefunction(::SigmoidKernel) = ScalarProduct()
 @inline kappa{T}(κ::SigmoidKernel{T}, z::T) = sigmoidkernel(z, getvalue(κ.a), getvalue(κ.c))
+@inline gradkappa{T}(k::SigmoidKernel{T}, wrt::Type{Val{:a}}, z::T) = dsigmoidkernel(wrt, z, getvalue(k.a), getvalue(k.c))
+@inline gradkappa{T}(k::SigmoidKernel{T}, wrt::Type{Val{:c}}, z::T) = dsigmoidkernel(wrt, z, getvalue(k.a), getvalue(k.c))
 
 
 
